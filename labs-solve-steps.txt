@@ -1,0 +1,77 @@
+Lab install steps / demo steps
+
+Lab : Installing Red Hat Satellite 6
+
+[*]	ssh into satellite
+[*]	ssh into capsule
+[*]	wget satellite iso to satellite:/tmp
+[*]	wget capsule iso to capsule:/tmp
+[*]	loop mount satellite iso on satellite:/mnt/isos
+[*]	loop mount capsule iso on capsule:/mnt/isos
+[*]	copy capsule:/mnt/isos/media.repo capsule:/etc/yum.repos.d/
+
+[*]	modify capsule:/etc/yum.repos.d/media.repo to look like
+[InstallMedia]
+name=Red Hat Satellite 6.2.1 for Red Hat Enterprise Linux 7
+mediaid=1469202255.033873
+metadata_expire=-1
+gpgcheck=0
+baseurl=file:///mnt/isos/
+cost=500
+
+[*]	import RPM GPG key on capsule
+[root@capsule ~]# rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[*]	install packages on capsule
+[root@capsule ~]# yum clean all
+[root@capsule ~]# yum repolist
+[root@capsule ~]# yum install -y satellite-capsule
+
+[*]	set firewall rules (service=RH-Satellite-6) on satellite and capsule
+(run this loop from the workstation)
+for s in satellite capsule ;
+do
+ssh root@{s}
+"firewall-cmd --permanent
+--add-service=RH-Satellite-6 ; firewall-cmd --reload
+;
+done
+
+[*]	run satellite-installer on satellite (works also with katello-installer ) (approx: 23-25 min)
+[root@satellite ~]# satellite-installer --help
+[root@satellite ~]# satellite-installer --scenario satellite --help
+[root@satellite ~]# satellite-installer --scenario satellite --help | more
+[root@satellite ~]# satelite-installer --scenario satellite --foreman-admin-username admin --foreman-user-password redhat
+
+[*]	generate certificate for capsule server on satellite server (approx: 2 min)
+[root@satellite ~]# capsule-certs-generate --help
+[root@satellite ~]# capsule-certs-generate \
+--capsule-fqdn capsule.lab.example.com \
+--certs-tar ~/capsule.lab.example.com-certs.tar
+
+[*]	IMPORTANT! : copy output of previous step staring at 'To finish the installation, follow these steps:' to capsule:/root/capsule-install-steps.txt file for later use
+[*]	IMPORTANT! : copy installer command to capsule:/root/capsule-install.sh
+
+[*]	Installing the capsule : Follow the steps in capsule:/root/capsule-install-steps.txt
+	1. [root@capsule ~]# yum localinstall .......
+	2. [root@capsule ~]# subscription-manager register ......
+	3. copy generated certs from satellite to capsule
+[root@capsule ~]# scp root@satellite:/root/capsule.lab.example.com-certs.tar /root/
+	4. run capsule:/root/capsule-install.sh		(approx: 5 - 10 min)
+[root@capsule ~]# bash capsule-install.sh
+
+[*]	import the manifest manifest_acme.zip
+[HAMMERTIME]	[root@satellite ~]# hammer subscription upload /root/manifest_acme.zip
+[*]	change the CDN location to http://content.example.com/rhsat6.2.1/cdn
+[*]	sync the repository
+[HAMMERTIME]	[root@satellite ~]# hammer repository-set enable \
+--product "prod_name" \
+--basearch "base_arch" \
+--releasever "rel_v" \
+--name "repo_name"
+[HAMMERTIME]	[root@satellite ~]# hammer repository synchronize \
+--product "prod_name" \
+--name "repo_name"
+
+[*]		 			
+

@@ -1,0 +1,61 @@
+# Building a RPM pipeline
+
+[*] Get RPM development packages
+[*] setup RPM build environment
+[*] Create a signing GPG key
+[*] get a source package from somewhere
+[*] create a spec file
+[*] build the rpm
+
+
+## Get packages (as root)
+yum install -y rpm-build rpm-devel rpmlint rpm-sign rpmdevtools tree
+
+## setup the develop tree (as student)
+rpmdev-setuptree
+
+## create RPM signing GPG key
+sudo rngd -r /dev/urandom   # making sure the system generates entrophy
+gpg --gen-key
+  -> option 1: RSA and RSA (default)
+  -> 2048 bit
+  -> 0 (no expiration)
+  -> user name
+  -> user email
+  -> some comment
+  -> passphrase : secretpass123
+
+### Copy GPG key to rpmmacros file for this user
+echo '%_gpg_name XXXXXXXX' >> ~/.rpmmacros
+
+## Export GPG Key
+### get the fingerprint for the GPG key just created
+gpg --fingerprint
+### export to a file where XXXXXX is the 2e part of the public id (2048R/*B1979661*)
+gpg --export --armor XXXXXXX > GPG-RPM-XXXXXXX
+
+### Import on another system or in another keyring with
+rpm --import GPG-RPM-XXXXXX
+
+
+## get a source package from somewhere
+## Download practice package
+wget http://your-url-here/example.1.0.tar.gz
+
+## list content of the package
+tar -tf example.1.0.tar.gz
+
+## create a spec file
+vim rpmbuild/SPECS/example.spec
+
+## build the rpm
+rpmbuild -ba rpmbuild/SPECS/example.spec
+
+### and resolve any issues (rinse and repeat)
+
+## Sign the package and send it into the world
+## because you added your GPG key to your keyring and to your .rpmmacros file, you dont need to specify 
+## the gpg key used for signing
+cp rpmbuild/RPMS/x86_64/example-1.0-1.el7.x86_64.rpm .
+rpmsign --addsign example-1.0-1.el7.x86_64.rpm
+

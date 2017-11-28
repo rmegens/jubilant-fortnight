@@ -1,0 +1,28 @@
+# lets have some fun with puppet
+
+# check out a file with puppet
+puppet resource file /root/anancona-ks.
+
+# look at the local users
+puppet resource user
+
+puppet resource user | grep klaasje
+
+# content of manifest hiklaasje.pp
+user {'klaasje':
+  ensure => present,
+}
+
+# content of manifest byeklaasje.pp
+user {'klaasje':
+  ensure => absent,
+}
+
+# more info on a resource
+puppet describe user
+
+# fun with facter
+facter
+
+
+

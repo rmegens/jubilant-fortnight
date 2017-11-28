@@ -1,0 +1,5 @@
+# store this file as ~/.hammer/cli_config.yml, chmod 0600
+:foreman:
+  :host: 'https://satellite.lab.example.com'
+  :username: 'admin'
+  :password: 'redhat'

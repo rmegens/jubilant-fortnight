@@ -1,0 +1,4 @@
+# foreman-rake katello:reindex
+## The 'foreman-rake katello:reindex' is often use to ensure that the Satellite (katello) database is kept in sync 
+## with backend services (e.g. pulp, candlepin). 
+

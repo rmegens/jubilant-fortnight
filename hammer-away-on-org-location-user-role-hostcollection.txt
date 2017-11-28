@@ -1,0 +1,75 @@
+# Usefull links & resources
+Hammer cheat sheat :
+Hammer CLI :
+Your own imagination.
+
+# Disclaimer: This document does not try to be complete, its just a reminder tool for when peforming tasks on a satellite. Where 
+# possible duplication is avoided. So when you need information to complete a certain task, its likely the way to get to that 
+# information is described earlier or should be retrievable via de forementioned links and resources.
+# The exampes used are random picked. Any resemblence with real life is coinsidence and without any meaning other then 'its an example'. 
+# This information is provided as-is. Using this information is on your own risk.  
+
+# Why this scenario : To play arround with hammer we need some substance, so we need at least one organization, a few locations and a 
+# few users we can add to roles.
+
+# create a new organization with 2 new locations. Create two new users and two new host collections.
+
+# organization : Blue
+[root@satellite ~]# hammer organization create --name Blue
+[root@satellite ~]# hammer organization list
+
+# locations : Backyard, Livingroom
+[root@satellite ~]# hammer location create --name 'Backyard'
+[root@satellite ~]# hammer location create --name 'Livingroom'
+[root@satellite ~]# hammer location list
+
+# add locations to organization Blue
+[root@satellite ~]# hammer location add-organization --name 'Backyard' --organization Blue
+[root@satellite ~]# hammer location add-organization --name 'Livingroom' --organization Blue
+[root@satellite ~]# hammer organization info --name Blue | grep Locations -A3
+
+# users :
+  - Rinse, Auditor, role: Viewer, Location: Backyard
+  - Appelstroop, DBA, role: Manager, Location : Livingroom
+
+## List roles
+[root@satellite ~]# hammer role list
+
+## List organizations
+[root@satellite ~]# hammer organization list
+
+## List locations
+[root@satellite ~]# hammer location list
+
+## create user and add to (default) organization and location
+## for this we first make sure we know the id's by asking out satellite with the list subcommand
+## for me this panned out to be 1,4,3,4,3 for rinse and 1,5,3,5,3 for appelstroop (in that order)
+[root@satellite ~]# hammer user create --login rinse \
+--auth-source-id 1 \
+--location-ids 4 \
+--organization-ids 3 \
+--default-location-id 4 \
+--default-organization-id 3 \
+--mail rinse@enter-domain-here \
+--password secret-password-here
+
+[root@satellite ~]# hammer user create --login appelstroop \
+--auth-source-id 1 \
+--location-ids 5 \
+--organization-ids 3 \
+--default-location-id 5 \
+--default-organization-id 3 \
+--mail appelstroop@enter-domain-here \
+--password secret-password-here
+
+# add user to role
+## List available roles
+[root@satellite ~]# hammer role list
+[root@satellite ~]# hammer user add-role --login rinse --role-id 11
+[root@satellite ~]# hammer user add-role --login appelstroop --role-id 7
+
+# creat host collections BlueDesktops and BlueServers in the Blue organization
+[root@satellite ~]# hammer host-collection create --organization-id 3 --name BlueDesktops
+[root@satellite ~]# hammer host-collection create --organization-id 3 --name BlueServers
+[root@satellite ~]# hammer host-collection --organization-id 3 list
+
